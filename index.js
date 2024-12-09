@@ -1,10 +1,11 @@
 import express from 'express';
 import Student from './Entity/Student.js';
 import AClass from './Entity/Class.js';
+import {uid} from 'uid';
 
 const app = express();
 const port = 3000;
-import {uid} from 'uid';
+
 
 let studentArray = [];
 let classArray = [];
