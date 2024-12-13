@@ -1,6 +1,6 @@
 import express from 'express';
 import Student from './Entity/Student.js';
-import AClass from './Entity/Class.js';
+import ClassData from './Entity/Class.js';
 import {uid} from 'uid';
 
 const app = express();
@@ -9,9 +9,9 @@ const port = 3000;
 
 let studentArray = [];
 let classArray = [];
-classArray.push(new AClass(uid(), 'toan'));
-classArray.push(new AClass(uid(), 'tin'));
-classArray.push(new AClass(uid(), 'van'));
+classArray.push(new ClassData(uid(), 'toan'));
+classArray.push(new ClassData(uid(), 'tin'));
+classArray.push(new ClassData(uid(), 'van'));
 studentArray.push(new Student(uid(), 'Huy', classArray[0]));
 studentArray.push(new Student(uid(), 'Lam', classArray[1]));
 studentArray.push(new Student(uid(), 'Nam', classArray[2]));
@@ -22,7 +22,7 @@ studentArray.push(new Student(uid(), 'Trang', classArray[2]));
 app.use(express.json());
 // toan bo hoc sinh
 app.get('/student', (req, res) => {
-    res.json(studentArray);
+    res.status(200).json(studentArray)
 });
 // toan bo lop hoc
 app.get('/class', (req, res) => {
@@ -33,7 +33,7 @@ app.get('/student/:id', (req, res) => {
     const id = req.params.id;
     const student = studentArray.find(student => student.id === id);
     if (!student) {
-        res.json({"message":`Không tìm thấy học sinh ${id}`});
+        res.status(400).json({"message":`Không tìm thấy học sinh ${id}`});
         return;
     }
     res.json(student);
@@ -43,7 +43,7 @@ app.get('/student/name/:name', (req, res) => {
     const name = req.params.name;
     const student = studentArray.filter(student => student.name.indexOf(name) > -1);
     if (student.length === 0) {
-        res.json({'message':`Không tìm thấy học sinh ${name}`});
+        res.status(400).json({'message':`Không tìm thấy học sinh ${name}`});
         return;
     }
     res.json(student);
@@ -51,14 +51,14 @@ app.get('/student/name/:name', (req, res) => {
 // hoc sinh theo lop
 app.get('/student/class/:studentClass', (req, res) => {
     const studentClass = req.params.studentClass;
-    const aClass = classArray.find(aClass => aClass.name === studentClass);
-    if (!aClass) {
-        res.json({'message':`Không tìm thấy lớp ${studentClass}`});
+    const ClassData = classArray.find(ClassData => ClassData.name === studentClass);
+    if (!ClassData) {
+        res.status(400).json({'message':`Không tìm thấy lớp ${studentClass}`});
         return;
     }
     const student = studentArray.filter(student => student.studentClass.name === studentClass);
     if (student.length === 0) {
-        res.json({'message':`Không có học sinh trong lớp ${studentClass}`});
+        res.status(400).json({'message':`Không có học sinh trong lớp ${studentClass}`});
         return;
     }
     res.json(student);
@@ -68,17 +68,17 @@ app.post('/student', (req, res) => {
     const id = uid();
     const {name, nameClass} = req.body;
     if (!name || !nameClass) {
-        res.json({'message':'Thiếu thông tin'});
+        res.status(400).json({'message':'Thiếu thông tin'});
         return;
     }
-    const studentClass = classArray.find(aClass => aClass.name === nameClass);
+    const studentClass = classArray.find(ClassData => ClassData.name === nameClass);
     if (!studentClass) {
-        res.json(`lớp ${nameClass} không tồn tại`);
+        res.status(400).json(`lớp ${nameClass} không tồn tại`);
         return;
     }
     const subStudent = studentArray.find(student => student.name === name);
     if (subStudent) {
-        res.json({'message':`Học sinh ${name} đã tồn tại`});
+        res.status(400).json({'message':`Học sinh ${name} đã tồn tại`});
         return;
     }
     const newStudent = new Student(id, name, studentClass);
@@ -91,17 +91,17 @@ app.put('/student/:id', (req, res) => {
     const {name, nameClass} = req.body
     const student = studentArray.find(student => student.id === studentId);
     if (!student) {
-        res.json({'message':`Không tìm thấy học sinh ${studentId}`});
+        res.status(400).json({'message':`Không tìm thấy học sinh ${studentId}`});
         return;
     }
     const subStudent = studentArray.find(student => student.name === name);
     if (subStudent) {
-        res.json({'message':`Học sinh ${name} đã tồn tại`});
+        res.status(400).json({'message':`Học sinh ${name} đã tồn tại`});
         return;
     }
-    const studentClass = classArray.find(aClass => aClass.name === nameClass);
+    const studentClass = classArray.find(ClassData => ClassData.name === nameClass);
     if (!studentClass) {
-        res.json({'message':`Lớp ${nameClass} không tồn tại`});
+        res.status(400).json({'message':`Lớp ${nameClass} không tồn tại`});
         return;
     }
     student.name = name;
@@ -113,7 +113,7 @@ app.delete('/student/:id', (req, res) => {
     const studentId = req.params.id;
     const student = studentArray.find(student => student.id === studentId);
     if (!student) {
-        res.json({'message':`Không tìm thấy học sinh ${studentId}`});
+        res.status(400).json({'message':`Không tìm thấy học sinh ${studentId}`});
         return;
     }
     studentArray = studentArray.filter(student => student.id !== studentId);
@@ -123,16 +123,16 @@ app.delete('/student/:id', (req, res) => {
 app.post('/class', (req, res) => {
     const {name} = req.body;
     if (!name) {
-        res.json({'message':'Thiếu thông tin'});
+        res.status(400).json({'message':'Thiếu thông tin'});
         return;
     }
-    const aClass = classArray.find(aClass => aClass.name === name);
-    if (aClass) {
-        res.json({'message':`Lớp ${name} đã tồn tại`});
+    const ClassData = classArray.find(ClassData => ClassData.name === name);
+    if (ClassData) {
+        res.status(400).json({'message':`Lớp ${name} đã tồn tại`});
         return;
     }
     let id = uid();
-    const newClass = new AClass(id, name);
+    const newClass = new ClassData(id, name);
     classArray.push(newClass);
     res.json(newClass);
 })
@@ -141,47 +141,47 @@ app.put('/class/:id', (req, res) => {
     const classId = req.params.id;
     const {name} = req.body;
     if (!name) {
-        res.json({'message':'Thiếu thông tin'});
+        res.status(400).json({'message':'Thiếu thông tin'});
         return;
     }
-    const aClass = classArray.find(aClass => aClass.id === classId);
-    if (!aClass) {
-        res.json({'message':`Không tìm thấy lớp ${classId}`});
+    const ClassData = classArray.find(ClassData => ClassData.id === classId);
+    if (!ClassData) {
+        res.status(400).json({'message':`Không tìm thấy lớp ${classId}`});
         return;
     }
-    const aClass2 = classArray.find(aClass => aClass.name === name);
-    if (aClass2) {
-        res.json({'message':`Lớp ${name} đã tồn tại`});
+    const ClassData2 = classArray.find(ClassData => ClassData.name === name);
+    if (ClassData2) {
+        res.status(400).json({'message':`Lớp ${name} đã tồn tại`});
         return;
     }
-    aClass.name = name;
-    res.json(aClass);
+    ClassData.name = name;
+    res.json(ClassData);
 })
 // xoa lop hoc theo id
 app.delete('/class/:id', (req, res) => {
     const classId = req.params.id;
-    const aClass = classArray.find(aClass => aClass.id === classId);
-    if (!aClass) {
-        res.json({'message':`Không tìm thấy lớp ${classId}`});
+    const ClassData = classArray.find(ClassData => ClassData.id === classId);
+    if (!ClassData) {
+        res.status(400).json({'message':`Không tìm thấy lớp ${classId}`});
         return;
     }
-    const student = studentArray.find(student => student.studentClass === aClass);
+    const student = studentArray.find(student => student.studentClass === ClassData);
     if (student) {
-        res.json({'message':`Không thể xóa lớp ${classId} vì có học sinh trong lớp`});
+        res.status(400).json({'message':`Không thể xóa lớp ${classId} vì có học sinh trong lớp`});
         return;
     }
-    classArray = classArray.filter(aClass => aClass.id !== classId);
-    res.json(aClass);
+    classArray = classArray.filter(ClassData => ClassData.id !== classId);
+    res.json(ClassData);
 })
 // thong tin lop hoc theo id
 app.get('/class/:id', (req, res) => {
     const id = req.params.id;
-    const aClass = classArray.find(aClass => aClass.id === id);
-    if (!aClass) {
-        res.json({'message':`Không tìm thấy lớp ${id}`});
+    const ClassData = classArray.find(ClassData => ClassData.id === id);
+    if (!ClassData) {
+        res.status(400).json({'message':`Không tìm thấy lớp ${id}`});
         return;
     }
-    res.json(aClass);
+    res.json(ClassData);
 })
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
